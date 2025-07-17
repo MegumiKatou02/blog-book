@@ -98,7 +98,7 @@ export function useBlog() {
     error.value = null
 
     try {
-      const postFiles = import.meta.glob('../../public/posts/*.md', { as: 'raw' })
+      const postFiles = import.meta.glob('@/posts/*.md', { query: 'raw' })
 
       const filenames = Object.keys(postFiles).map((path) => path.split('/').pop() || '')
 
@@ -108,7 +108,7 @@ export function useBlog() {
 
       for (const filename of filenames) {
         try {
-          const response = await fetch(`/posts/${filename}`)
+          const response = await fetch(`${import.meta.env.BASE_URL}src/posts/${filename}`)
           if (!response.ok) {
             console.warn(`Failed to fetch ${filename}: ${response.status}`)
             continue
