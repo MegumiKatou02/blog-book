@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
 import { format } from 'date-fns'
@@ -32,27 +33,28 @@ marked.setOptions({
 const parseFrontmatter = (content: string) => {
   const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/
   const match = content.match(frontmatterRegex)
-  
+
   if (!match) {
     return { data: {}, content }
   }
-  
+
   const [, frontmatter, body] = match
   const data: any = {}
-  
+
   const lines = frontmatter.split('\n')
   for (const line of lines) {
     const trimmed = line.trim()
     if (!trimmed) continue
-    
+
     const colonIndex = trimmed.indexOf(':')
     if (colonIndex === -1) continue
-    
+
     const key = trimmed.substring(0, colonIndex).trim()
-    let value: any = trimmed.substring(colonIndex + 1).trim()
-    
+    const value: any = trimmed.substring(colonIndex + 1).trim()
+
     if (value.startsWith('[') && value.endsWith(']')) {
-      data[key] = value.slice(1, -1)
+      data[key] = value
+        .slice(1, -1)
         .split(',')
         .map((item: string) => item.trim().replace(/['"]/g, ''))
         .filter((item: string) => item.length > 0)
@@ -60,7 +62,7 @@ const parseFrontmatter = (content: string) => {
       data[key] = value.replace(/^['"]|['"]$/g, '')
     }
   }
-  
+
   return { data, content: body }
 }
 
@@ -84,28 +86,26 @@ export function useBlog() {
   const parseFilename = (filename: string) => {
     const match = filename.match(/(\d{2})-(\d{2})-(\d{4})-(\d+)-(.+)\.md$/)
     if (!match) return null
-    
+
     const [, day, month, year, postNumber, slug] = match
     const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-    
+
     return { date, slug, postNumber: parseInt(postNumber) }
   }
 
   const fetchPosts = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
-      const postFiles = import.meta.glob('../../public/posts/*.md', { as: 'raw' });
-      
-      const filenames = Object.keys(postFiles).map((path) =>
-        path.split('/').pop() || ''
-      );
+      const postFiles = import.meta.glob('../../public/posts/*.md', { as: 'raw' })
+
+      const filenames = Object.keys(postFiles).map((path) => path.split('/').pop() || '')
 
       console.log(filenames)
 
       const fetchedPosts: BlogPost[] = []
-      
+
       for (const filename of filenames) {
         try {
           const response = await fetch(`/posts/${filename}`)
@@ -113,21 +113,21 @@ export function useBlog() {
             console.warn(`Failed to fetch ${filename}: ${response.status}`)
             continue
           }
-          
+
           const rawContent = await response.text()
           const { data, content } = parseFrontmatter(rawContent)
           const meta = data as BlogMeta
-          
+
           const parsed = parseFilename(filename)
           if (!parsed) {
             console.warn(`Failed to parse filename: ${filename}`)
             continue
           }
-          
+
           const htmlContent = await marked(content)
           const excerpt = createExcerpt(content)
           const readTime = calculateReadTime(content)
-          
+
           fetchedPosts.push({
             id: filename.replace('.md', ''),
             title: meta.title || 'Untitled',
@@ -138,23 +138,23 @@ export function useBlog() {
             slug: parsed.slug,
             readTime,
             pinned: meta.pinned || false,
-            postNumber: parsed.postNumber
+            postNumber: parsed.postNumber,
           })
         } catch (err) {
           console.error(`Error processing ${filename}:`, err)
         }
       }
-      
+
       posts.value = fetchedPosts.sort((a, b) => {
         if (a.pinned && !b.pinned) return -1
         if (!a.pinned && b.pinned) return 1
-        
+
         const dateCompare = b.date.getTime() - a.date.getTime()
         if (dateCompare !== 0) return dateCompare
-        
+
         return (b.postNumber || 0) - (a.postNumber || 0)
       })
-      
+
       console.log(`Successfully loaded ${posts.value.length} posts`)
     } catch (err) {
       error.value = 'Không thể tải bài viết'
@@ -165,17 +165,17 @@ export function useBlog() {
   }
 
   const getPostBySlug = (slug: string) => {
-    return posts.value.find(post => post.slug === slug)
+    return posts.value.find((post) => post.slug === slug)
   }
 
   const getPostsByTag = (tag: string) => {
-    return posts.value.filter(post => post.tags.includes(tag))
+    return posts.value.filter((post) => post.tags.includes(tag))
   }
 
   const allTags = computed(() => {
     const tags = new Set<string>()
-    posts.value.forEach(post => {
-      post.tags.forEach(tag => tags.add(tag))
+    posts.value.forEach((post) => {
+      post.tags.forEach((tag) => tags.add(tag))
     })
     return Array.from(tags).sort()
   })
@@ -188,7 +188,7 @@ export function useBlog() {
     const now = new Date()
     const diffTime = now.getTime() - date.getTime()
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 0) return 'Hôm nay'
     if (diffDays === 1) return 'Hôm qua'
     if (diffDays < 7) return `${diffDays} ngày trước`
@@ -206,6 +206,6 @@ export function useBlog() {
     getPostBySlug,
     getPostsByTag,
     formatDate,
-    formatDateRelative
+    formatDateRelative,
   }
-} 
+}
