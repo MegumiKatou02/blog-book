@@ -7,10 +7,10 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
-  base: process.env.NODE_ENV === 'production' ? '/blog-book/' : '/',
+  base: '/blog-book/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
@@ -18,9 +18,9 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router', 'pinia'],
-          utils: ['marked', 'gray-matter', 'date-fns']
-        }
-      }
-    }
-  }
+          utils: ['marked', 'gray-matter', 'date-fns'],
+        },
+      },
+    },
+  },
 })
