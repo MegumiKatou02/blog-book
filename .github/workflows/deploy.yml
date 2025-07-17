@@ -22,12 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Polyfill crypto (fix for vite+vue bug)
-        run: |
-          echo "globalThis.crypto = require('crypto').webcrypto;" > ./polyfill-crypto.js
-          echo "" >> ./polyfill-crypto.js
-
+        
       - name: Build
         run: npm run build
 
