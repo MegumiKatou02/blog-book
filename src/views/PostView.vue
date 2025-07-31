@@ -22,7 +22,7 @@
           </svg>
         </div>
         <h1 class="text-2xl font-bold text-stone-900 mb-2">Không tìm thấy ghi chú</h1>
-        <p class="text-stone-600 mb-6">Trang nhật ký này không tồn tại hoặc đã bị xóa</p>
+        <p class="text-stone-600 mb-6">Trang nhật ký này không tồn tại hoặc đã bị xoá</p>
         <router-link to="/" class="btn-primary"> Quay về trang chính </router-link>
       </div>
     </div>

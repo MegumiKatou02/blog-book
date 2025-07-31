@@ -7,6 +7,8 @@ const { posts, loading, error, allTags, fetchPosts } = useBlog()
 
 const selectedTag = ref('')
 const searchQuery = ref('')
+const dateFilter = ref('')
+const dateFilterType = ref('exact') // 'exact', 'month', 'year'
 
 const filteredPosts = computed(() => {
   let filtered = posts.value
@@ -27,12 +29,80 @@ const filteredPosts = computed(() => {
     )
   }
 
+  // Filter by date
+  if (dateFilter.value) {
+    const filterDate = new Date(dateFilter.value)
+
+    filtered = filtered.filter((post) => {
+      const postDate = post.date
+
+      switch (dateFilterType.value) {
+        case 'exact':
+          return (
+            postDate.getDate() === filterDate.getDate() &&
+            postDate.getMonth() === filterDate.getMonth() &&
+            postDate.getFullYear() === filterDate.getFullYear()
+          )
+        case 'month':
+          return (
+            postDate.getMonth() === filterDate.getMonth() &&
+            postDate.getFullYear() === filterDate.getFullYear()
+          )
+        case 'year':
+          return postDate.getFullYear() === filterDate.getFullYear()
+        default:
+          return true
+      }
+    })
+  }
+
   return filtered
 })
 
 const clearFilters = () => {
   selectedTag.value = ''
   searchQuery.value = ''
+  dateFilter.value = ''
+  dateFilterType.value = 'exact'
+}
+
+const availableYears = computed(() => {
+  const years = new Set<number>()
+  posts.value.forEach((post) => {
+    years.add(post.date.getFullYear())
+  })
+  return Array.from(years).sort((a, b) => b - a)
+})
+
+const getFilterDescription = () => {
+  if (!dateFilter.value) return ''
+
+  const filterDate = new Date(dateFilter.value)
+  const monthNames = [
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
+  ]
+
+  switch (dateFilterType.value) {
+    case 'exact':
+      return `ngày ${filterDate.getDate()}/${filterDate.getMonth() + 1}/${filterDate.getFullYear()}`
+    case 'month':
+      return `${monthNames[filterDate.getMonth()]} ${filterDate.getFullYear()}`
+    case 'year':
+      return `năm ${filterDate.getFullYear()}`
+    default:
+      return ''
+  }
 }
 
 onMounted(() => {
@@ -148,13 +218,16 @@ onMounted(() => {
       <!-- Posts Section -->
       <div v-else-if="posts.length > 0">
         <!-- Filter Section -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-10 gap-6">
+        <div class="flex flex-col lg:items-left justify-between mb-10 gap-6">
           <div class="animate-fade-in-up">
             <h2 class="heading-section mb-2">Những ghi chú gần đây</h2>
             <p class="text-stone-600">
               {{ filteredPosts.length }} ghi chú
               <span v-if="selectedTag" class="text-amber-700 font-medium">
                 trong "{{ selectedTag }}"
+              </span>
+              <span v-if="dateFilter" class="text-amber-700 font-medium">
+                {{ selectedTag ? 'và' : 'trong' }} {{ getFilterDescription() }}
               </span>
             </p>
           </div>
@@ -163,11 +236,44 @@ onMounted(() => {
             <!-- Tag Filter -->
             <div class="relative">
               <select v-model="selectedTag" class="form-select min-w-[140px]">
-                <option value="">Tất cả</option>
+                <option value="">Tất cả danh mục</option>
                 <option v-for="tag in allTags" :key="tag" :value="tag">
                   {{ tag }}
                 </option>
               </select>
+            </div>
+
+            <!-- Date Filter Type -->
+            <div class="relative">
+              <select v-model="dateFilterType" class="form-select min-w-[120px]">
+                <option value="exact">Ngày cụ thể</option>
+                <option value="month">Theo tháng</option>
+                <option value="year">Theo năm</option>
+              </select>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="relative">
+              <input
+                v-model="dateFilter"
+                :type="
+                  dateFilterType === 'year'
+                    ? 'number'
+                    : dateFilterType === 'month'
+                      ? 'month'
+                      : 'date'
+                "
+                :min="dateFilterType === 'year' ? Math.min(...availableYears) : undefined"
+                :max="dateFilterType === 'year' ? Math.max(...availableYears) : undefined"
+                class="form-input min-w-[140px]"
+                :placeholder="
+                  dateFilterType === 'exact'
+                    ? 'Chọn ngày...'
+                    : dateFilterType === 'month'
+                      ? 'Chọn tháng...'
+                      : 'Chọn năm...'
+                "
+              />
             </div>
 
             <!-- Search -->
@@ -192,6 +298,69 @@ onMounted(() => {
                 />
               </svg>
             </div>
+
+            <!-- Clear Filters Button -->
+            <button
+              v-if="selectedTag || searchQuery || dateFilter"
+              @click="clearFilters"
+              title="Xóa tất cả bộ lọc"
+            >
+              <svg
+                class="w-[24px] h-[24px] mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Date Filters -->
+        <div class="mb-8 animate-fade-in-up">
+          <div class="flex flex-wrap gap-2">
+            <span class="text-sm text-stone-500 font-medium mr-2">Lọc nhanh:</span>
+            <button
+              v-for="year in availableYears.slice(0, 5)"
+              :key="year"
+              @click="
+                () => {
+                  dateFilter = year.toString()
+                  dateFilterType = 'year'
+                }
+              "
+              class="px-3 py-1 text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full transition-colors"
+            >
+              {{ year }}
+            </button>
+            <button
+              @click="
+                () => {
+                  dateFilter = new Date().toISOString().split('T')[0].slice(0, 7)
+                  dateFilterType = 'month'
+                }
+              "
+              class="px-3 py-1 text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition-colors"
+            >
+              Tháng này
+            </button>
+            <button
+              @click="
+                () => {
+                  dateFilter = new Date().getFullYear().toString()
+                  dateFilterType = 'year'
+                }
+              "
+              class="px-3 py-1 text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition-colors"
+            >
+              Năm nay
+            </button>
           </div>
         </div>
 
@@ -225,8 +394,8 @@ onMounted(() => {
             </svg>
           </div>
           <h3 class="text-lg font-semibold text-stone-900 mb-2">Không tìm thấy ghi chú nào</h3>
-          <p class="text-stone-600 mb-6">Thử thay đổi từ khóa tìm kiếm hoặc danh mục</p>
-          <button @click="clearFilters" class="btn-secondary">Xóa bộ lọc</button>
+          <p class="text-stone-600 mb-6">Thử thay đổi từ khóa tìm kiếm, danh mục hoặc ngày tháng</p>
+          <button @click="clearFilters" class="btn-secondary">Xoá bộ lọc</button>
         </div>
       </div>
 
