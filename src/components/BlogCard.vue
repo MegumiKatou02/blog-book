@@ -86,7 +86,7 @@
       </div>
 
       <router-link
-        :to="{ name: 'post', params: { slug: post.slug } }"
+        :to="{ name: 'post', params: { slug: post.slug }, query: { pn: post.postNumber ?? 1 } }"
         class="inline-flex items-center text-sm font-medium text-amber-700 hover:text-amber-800 transition-colors duration-200"
       >
         <span class="mr-2">Đọc bài viết</span>

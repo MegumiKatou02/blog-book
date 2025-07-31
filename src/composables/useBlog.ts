@@ -152,7 +152,10 @@ export function useBlog() {
         const dateCompare = b.date.getTime() - a.date.getTime()
         if (dateCompare !== 0) return dateCompare
 
-        return (b.postNumber || 0) - (a.postNumber || 0)
+        if (a.postNumber === undefined && b.postNumber === undefined) return 0
+        if (a.postNumber === undefined) return 1
+        if (b.postNumber === undefined) return -1
+        return b.postNumber - a.postNumber
       })
 
       console.log(`Successfully loaded ${posts.value.length} posts`)
@@ -164,8 +167,10 @@ export function useBlog() {
     }
   }
 
-  const getPostBySlug = (slug: string) => {
-    return posts.value.find((post) => post.slug === slug)
+  const getPostBySlug = (slug: string, postNumber: string) => {
+    return posts.value.find(
+      (post) => post.slug === slug && Number.parseInt(postNumber) === post.postNumber,
+    )
   }
 
   const getPostsByTag = (tag: string) => {
