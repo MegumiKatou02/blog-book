@@ -102,8 +102,6 @@ export function useBlog() {
         (res) => res.json(),
       )
 
-      console.log(filenames)
-
       const fetchedPosts: BlogPost[] = []
 
       for (const filename of filenames) {

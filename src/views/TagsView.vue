@@ -2,9 +2,7 @@
   <div class="min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="text-center mb-12">
-        <h1 class="heading-display mb-4">
-          Danh Mục Ghi Chú
-        </h1>
+        <h1 class="heading-display mb-4">Danh Mục Ghi Chú</h1>
         <p class="text-lg text-stone-600 max-w-2xl mx-auto italic">
           "やがてあなたは忘れてしまうでしょう。"
         </p>
@@ -25,9 +23,21 @@
           >
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg flex items-center justify-center"
+                >
+                  <svg
+                    class="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -35,21 +45,23 @@
                   <p class="text-sm text-stone-500">{{ getPostsByTag(tag).length }} ghi chú</p>
                 </div>
               </div>
-              <svg 
+              <svg
                 class="w-5 h-5 text-stone-400 transform transition-transform duration-200"
                 :class="{ 'rotate-180': expandedTags.includes(tag) }"
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </div>
-            
-            <div 
-              v-if="expandedTags.includes(tag)"
-              class="space-y-3 animate-fade-in-up"
-            >
+
+            <div v-if="expandedTags.includes(tag)" class="space-y-3 animate-fade-in-up">
               <div
                 v-for="post in getPostsByTag(tag)"
                 :key="post.id"
@@ -58,7 +70,11 @@
                 <div class="w-2 h-2 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
                 <div class="flex-1 min-w-0">
                   <router-link
-                    :to="{ name: 'post', params: { slug: post.slug } }"
+                    :to="{
+                      name: 'post',
+                      params: { slug: post.slug },
+                      query: { pn: post.postNumber ?? 1 },
+                    }"
                     class="block hover:text-amber-700 transition-colors"
                   >
                     <h4 class="font-medium text-stone-900 line-clamp-1 mb-1">{{ post.title }}</h4>
@@ -67,7 +83,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div v-else class="space-y-2">
               <div
                 v-for="post in getPostsByTag(tag).slice(0, 3)"
@@ -91,9 +107,21 @@
       </div>
 
       <div v-else class="text-center py-20">
-        <div class="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg class="w-10 h-10 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+        <div
+          class="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6"
+        >
+          <svg
+            class="w-10 h-10 text-stone-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+            />
           </svg>
         </div>
         <h3 class="text-xl font-semibold text-stone-900 mb-2">Chưa có danh mục nào</h3>
@@ -134,4 +162,4 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-</style> 
+</style>
